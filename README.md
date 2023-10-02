@@ -7,6 +7,6 @@ Features:
  - Zero Learning Curve
  - No-Nonsense Design Philosophy
 
-Possible Features:
+Possible Future Features:
  - User Defined Variables And Functions
  - Programming Language Features Such As Conditionals And Program Flow
