@@ -1,19 +1,5 @@
 #![allow(dead_code)]
 
-#[derive(Debug)]
-enum TokenType {
-    Number,     // 1, 2, 3... exc.
-    Operator,   // + - * / exc.
-    Function,   // sqrt, log, exc.
-    Parenthesis
-}
-
-#[derive(Debug)]
-struct Token {
-    typ: TokenType,
-    lex: String  // Data as a string
-}
-
 fn is_operator(c: char) -> bool {
     match c {
         '+' => true,
@@ -38,6 +24,53 @@ fn is_parenthesis(c: char) -> bool {
         '(' => true,
         ')' => true,
         _ => false
+    }
+}
+
+#[derive(Debug)]
+enum TokenType {
+    Number,     // 1, 2, 3... exc.
+    Operator,   // + - * / exc.
+    Function,   // sqrt, log, exc.
+    Parenthesis
+}
+
+#[derive(Debug)]
+struct Token {
+    typ: TokenType,
+    lex: String  // Data as a string
+}
+
+#[derive(Debug)]
+enum ParseNode {
+    Operator (char, Box<ParseNode>, Box<ParseNode>),
+    Number(f64),
+    Null
+}
+
+#[derive(Debug)]
+struct Parser;
+
+// Wtf
+impl Parser {
+    fn parser(&self, tokens: &[Token]) -> Box<ParseNode> {
+        for tok in tokens {
+            if matches!(tok.typ, TokenType::Operator) {
+                self.parse_expression(tokens);
+            }
+
+            
+        }
+        self.parse_expression(tokens)
+    }
+    fn parse_factor(&self, tokens: &[Token]) -> Box<ParseNode> {
+
+    }
+    fn parse_expression(&self, tokens: &[Token]) -> Box<ParseNode> {
+
+    }
+    fn parse_term(&self, tokens: &[Token]) -> Box<ParseNode> {
+
     }
 }
 
@@ -94,7 +127,6 @@ fn lexer(data: &str) -> Vec<Token> {
     }
     tokens
 }
-
 
 fn program_loop() {
     println!("\n----SpeedJunk™----\n");
