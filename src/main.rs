@@ -54,23 +54,16 @@ struct Parser;
 // Wtf
 impl Parser {
     fn parser(&self, tokens: &[Token]) -> Box<ParseNode> {
-        for tok in tokens {
-            if matches!(tok.typ, TokenType::Operator) {
-                self.parse_expression(tokens);
-            }
-
-            
-        }
         self.parse_expression(tokens)
     }
-    fn parse_factor(&self, tokens: &[Token]) -> Box<ParseNode> {
+    fn parse_factor(&self, tokens: &[Token]) -> Box<ParseNode> {  // Number, Parenthesis
 
     }
-    fn parse_expression(&self, tokens: &[Token]) -> Box<ParseNode> {
+    fn parse_term(&self, tokens: &[Token]) -> Box<ParseNode> {  // Multiply, Divide
 
     }
-    fn parse_term(&self, tokens: &[Token]) -> Box<ParseNode> {
-
+    fn parse_expression(&self, tokens: &[Token]) -> Box<ParseNode> {  // Add, Subtract
+        
     }
 }
 
