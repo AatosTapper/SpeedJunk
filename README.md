@@ -6,6 +6,7 @@ Features:
  - Efficient And Fast To Use
  - Zero Learning Curve
  - No-Nonsense Design Philosophy
+ - High Precision 64-bit Float Internal Data Representation
 
 Possible Future Features:
  - User Defined Variables And Functions
