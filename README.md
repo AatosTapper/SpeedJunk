@@ -1,4 +1,4 @@
-# SpeedMunch (Work In Progress)
+# SpeedJunk (Work In Progress)
 Evaluating Command Line Calculator Written in Rust
 
 Features:
