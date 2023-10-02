@@ -95,14 +95,26 @@ fn lexer(data: &str) -> Vec<Token> {
     tokens
 }
 
-fn main() {
+
+fn program_loop() {
+    println!("\n----SpeedJunk™----\n");
+    println!("Begin Calculation Or Type [ :q ] To Quit\n");
+    
     let mut data: String = String::new();
+    loop {
+        data.clear();
+        std::io::stdin().read_line(&mut data).unwrap();
+        if data.trim() == ":q" {
+            break;
+        }
+        let lexed: Vec<Token> = lexer(data.as_str());
 
-    std::io::stdin().read_line(&mut data).unwrap();
-
-    let lexed: Vec<Token> = lexer(data.as_str());
-
-    for token in lexed {
-        println!("{:?}", token);
+        for token in lexed {
+            println!("{:?}", token);
+        }
     }
+}
+
+fn main() {
+    program_loop();
 }
