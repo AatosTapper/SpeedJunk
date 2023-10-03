@@ -28,22 +28,35 @@ fn is_parenthesis(c: char) -> bool {
 }
 
 #[derive(Debug)]
+#[derive(Clone)]
 enum TokenType {
     Number,     // 1, 2, 3... exc.
-    Operator,   // + - * / exc.
+    BinaryOp,   // + - * / exc.
+    UnaryOp,   // ^ - exc.
     Function,   // sqrt, log, exc.
     Parenthesis
 }
 
 #[derive(Debug)]
+#[derive(Clone)]
 struct Token {
     typ: TokenType,
     lex: String  // Data as a string
 }
 
+impl Token {
+    fn copy(&self) -> Token {
+        Token {
+            typ: self.typ.clone(),
+            lex: self.lex.clone(),
+        }
+    }
+}
+
 #[derive(Debug)]
 enum ParseNode {
-    Operator (char, Box<ParseNode>, Box<ParseNode>),
+    Binary (char, Box<ParseNode>, Box<ParseNode>),
+    Unary (char, Box<ParseNode>),
     Number(f64),
     Null
 }
@@ -53,6 +66,7 @@ struct Parser;
 
 // Wtf
 impl Parser {
+    /*
     fn parser(&self, tokens: &[Token]) -> Box<ParseNode> {
         self.parse_expression(tokens)
     }
@@ -63,13 +77,15 @@ impl Parser {
 
     }
     fn parse_expression(&self, tokens: &[Token]) -> Box<ParseNode> {  // Add, Subtract
-        
+
     }
+     */
 }
 
 fn lexer(data: &str) -> Vec<Token> {
     let mut tokens: Vec<Token> = Vec::new();
     let mut chars = data.chars().peekable();
+    let mut last_tok = Token {typ: TokenType::Number, lex: "0".to_string()};
 
     while let Some(&c) = chars.peek() {
         if c.is_whitespace() {
@@ -84,10 +100,12 @@ fn lexer(data: &str) -> Vec<Token> {
                     break;
                 }
             }
-            tokens.push(Token {
+            let mut new_tok: Token = Token {
                 typ: TokenType::Number,
                 lex: buffer
-            });
+            };
+            last_tok = new_tok.clone();
+            tokens.push(new_tok);
         } else if c.is_alphabetic() {
             let mut buffer: String = String::new();
             while let Some(&c) = chars.peek() {
@@ -98,21 +116,39 @@ fn lexer(data: &str) -> Vec<Token> {
                     break;
                 }
             }
-            tokens.push(Token {
+            let mut new_tok: Token = Token {
                 typ: TokenType::Function,
                 lex: buffer
-            });
+            };
+            last_tok = new_tok.clone();
+            tokens.push(new_tok);
         } else if is_operator(c) {
-            tokens.push(Token {
-                typ: TokenType::Operator,
-                lex: String::from(c)
-            });
+            if c == '-' 
+            && (matches!(last_tok.typ, TokenType::BinaryOp)
+            || (matches!(last_tok.typ, TokenType::Parenthesis)
+            && last_tok.lex == "(")) {
+                let mut new_tok: Token = Token {
+                    typ: TokenType::UnaryOp,
+                    lex: String::from(c)
+                };
+                last_tok = new_tok.clone();
+                tokens.push(new_tok);
+            } else {
+                let mut new_tok: Token = Token {
+                    typ: TokenType::BinaryOp,
+                    lex: String::from(c)
+                };
+                last_tok = new_tok.clone();
+                tokens.push(new_tok);
+            }
             chars.next();
         } else if is_parenthesis(c) {
-            tokens.push(Token {
+            let mut new_tok: Token = Token {
                 typ: TokenType::Parenthesis,
                 lex: String::from(c)
-            });
+            };
+            last_tok = new_tok.clone();
+            tokens.push(new_tok);
             chars.next();
         } else {
             chars.next();
