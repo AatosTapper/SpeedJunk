@@ -61,6 +61,33 @@ enum ParseNode {
     Null
 }
 
+impl ParseNode {
+    fn evaluate(&mut self) -> f64 {
+        match self {
+            ParseNode::Binary(operator, left_operand, right_operand) => {
+                match operator {
+                    '+' => return left_operand.evaluate() + right_operand.evaluate(),
+                    '-' => return left_operand.evaluate() - right_operand.evaluate(),
+                    '*' => return left_operand.evaluate() * right_operand.evaluate(),
+                    '/' => return left_operand.evaluate() / right_operand.evaluate(),
+                    '^' => return f64::powf(left_operand.evaluate(), right_operand.evaluate()),
+                    _ => return 0.0
+                }
+            }
+            ParseNode::Unary(operator, left_operand) => {
+                match operator {
+                    '-' => return -left_operand.evaluate(),
+                    _ => return 0.0
+                }
+            }
+            ParseNode::Number(num) => {
+                *num
+            }
+            _ => return 0.0
+        }
+    }
+}
+
 #[derive(Debug)]
 struct Parser;
 
