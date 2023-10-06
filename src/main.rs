@@ -34,7 +34,8 @@ enum TokenType {
     BinaryOp,   // + - * / exc.
     UnaryOp,   // ^ - exc.
     Function,   // sqrt, log, exc.
-    Parenthesis
+    Parenthesis,
+    Null
 }
 
 #[derive(Debug)]
@@ -89,24 +90,58 @@ impl ParseNode {
 }
 
 #[derive(Debug)]
-struct Parser;
+enum ParserError {
+    SyntaxError(String),
+    MathError(String)
+}
 
-// Wtf
+#[derive(Debug)]
+struct Parser {
+    curr_token: usize,
+    all_tokens: Vec<Token>
+}
+
 impl Parser {
-    /*
-    fn parser(&self, tokens: &[Token]) -> Box<ParseNode> {
+    fn new() -> Self {
+        Self {
+            curr_token: 0,
+            all_tokens: Vec::new(),
+        }
+    }
+
+    fn create_ast(&mut self, tokens: &Vec<Token>) -> Result<Box<ParseNode>, ParserError> {
+        self.all_tokens = tokens.clone();
         self.parse_expression(tokens)
     }
-    fn parse_factor(&self, tokens: &[Token]) -> Box<ParseNode> {  // Number, Parenthesis
 
+    fn parse_factor(&mut self, token: &Token) -> Result<Box<ParseNode>, ParserError> {
+        // Implement your factor parsing logic here.
+        // If the token isn't what's expected, return a custom error like this:
+        // Err(ParserError::CustomError("Expected a different token type".to_string()))
     }
-    fn parse_term(&self, tokens: &[Token]) -> Box<ParseNode> {  // Multiply, Divide
 
+    fn parse_term(&mut self, tokens: &[Token]) -> Result<Box<ParseNode>, ParserError> {
+        // Implement your term parsing logic here.
+        // If the token isn't what's expected, return a custom error like this:
+        // Err(ParserError::CustomError("Expected a different token type".to_string()))
     }
-    fn parse_expression(&self, tokens: &[Token]) -> Box<ParseNode> {  // Add, Subtract
 
+    fn parse_expression(&mut self, tokens: &[Token]) -> Result<Box<ParseNode>, ParserError> {
+        // Implement your expression parsing logic here.
+        // If the token isn't what's expected, return a custom error like this:
+        // Err(ParserError::CustomError("Expected a different token type".to_string()))
     }
-     */
+
+    fn next_token(&self) -> Token {
+        if self.curr_token < self.all_tokens.len() - 1 {
+            self.all_tokens[self.curr_token + 1].clone()
+        } else {
+            Token {
+                typ: TokenType::Null,
+                lex: String::from("0"),
+            }
+        }
+    }
 }
 
 fn lexer(data: &str) -> Vec<Token> {
@@ -185,6 +220,8 @@ fn lexer(data: &str) -> Vec<Token> {
 }
 
 fn program_loop() {
+    let mut parser: Parser = Parser::new();
+
     println!("\n----SpeedJunk™----\n");
     println!("Begin Calculation Or Type [ :q ] To Quit\n");
     
@@ -195,10 +232,25 @@ fn program_loop() {
         if data.trim() == ":q" {
             break;
         }
-        let lexed: Vec<Token> = lexer(data.as_str());
 
-        for token in lexed {
-            println!("{:?}", token);
+        let lexed: Vec<Token> = lexer(data.as_str());
+        let ast: Result<Box<ParseNode>, ParserError> = parser.create_ast(&lexed);
+
+        match ast {
+            Ok(mut result) => {
+                println!("{}", result.evaluate());
+                continue;
+            }
+            Err(error) => match error {
+                ParserError::SyntaxError(message) => {
+                    println!("Syntax error: {}", message);
+                    continue;
+                }
+                ParserError::MathError(message) => {
+                    println!("Math error: {}", message);
+                    continue;
+                }
+            }
         }
     }
 }
