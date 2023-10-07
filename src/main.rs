@@ -97,49 +97,76 @@ enum ParserError {
 
 #[derive(Debug)]
 struct Parser {
-    curr_token: usize,
+    curr_index: usize,
     all_tokens: Vec<Token>
 }
 
 impl Parser {
     fn new() -> Self {
         Self {
-            curr_token: 0,
+            curr_index: 0,
             all_tokens: Vec::new(),
         }
     }
 
-    fn create_ast(&mut self, tokens: &Vec<Token>) -> Result<Box<ParseNode>, ParserError> {
-        self.all_tokens = tokens.clone();
-        self.parse_expression(tokens)
+    fn create_ast(&mut self, tokens: Vec<Token>) -> Result<Box<ParseNode>, ParserError> {
+        self.all_tokens = tokens;
+        self.parse_expression()
     }
 
-    fn parse_factor(&mut self, token: &Token) -> Result<Box<ParseNode>, ParserError> {
-        // Implement your factor parsing logic here.
-        // If the token isn't what's expected, return a custom error like this:
-        // Err(ParserError::CustomError("Expected a different token type".to_string()))
+    fn parse_expression(&mut self) -> Result<Box<ParseNode>, ParserError> {
+        let mut term = self.parse_term()?;
+        let mut token = self.all_tokens[self.curr_index];
+        while (matches!(token.lex.as_str(), "+") || matches!(token.lex.as_str(), "-"))
+            && matches!(token.typ, TokenType::BinaryOp) {
+            let mut operator: char = token.lex.chars().next().unwrap();
+            self.next_token();
+            let mut right_term = self.parse_term()?;
+            term = Box::new(ParseNode::Binary(operator, term, right_term));
+        }
+        Ok(term)
     }
 
-    fn parse_term(&mut self, tokens: &[Token]) -> Result<Box<ParseNode>, ParserError> {
-        // Implement your term parsing logic here.
-        // If the token isn't what's expected, return a custom error like this:
-        // Err(ParserError::CustomError("Expected a different token type".to_string()))
+    fn parse_term(&mut self) -> Result<Box<ParseNode>, ParserError> {
+        let mut factor = self.parse_factor()?;
+        let mut token = self.all_tokens[self.curr_index];
+        while matches!(token.lex.as_str(), "*") || matches!(token.lex.as_str(), "/") {
+            let mut operator: char = token.lex.chars().next().unwrap();
+            self.next_token();
+            let mut right_factor = self.parse_factor()?;
+            factor = Box::new(ParseNode::Binary(operator, factor, right_factor));
+        }
+        Ok(factor)
     }
 
-    fn parse_expression(&mut self, tokens: &[Token]) -> Result<Box<ParseNode>, ParserError> {
-        // Implement your expression parsing logic here.
-        // If the token isn't what's expected, return a custom error like this:
-        // Err(ParserError::CustomError("Expected a different token type".to_string()))
-    }
-
-    fn next_token(&self) -> Token {
-        if self.curr_token < self.all_tokens.len() - 1 {
-            self.all_tokens[self.curr_token + 1].clone()
-        } else {
-            Token {
-                typ: TokenType::Null,
-                lex: String::from("0"),
+    fn parse_factor(&mut self) -> Result<Box<ParseNode>, ParserError> {
+        let token = self.all_tokens[self.curr_index];
+        if matches!(token.typ, TokenType::Number) {
+            let val: f64 = token.lex.parse().unwrap();
+            self.next_token();
+            Ok(Box::new(ParseNode::Number(val)))
+        } else if matches!(token.lex.as_str(), "(") {
+            self.next_token();
+            let expression = self.parse_expression()?;
+            let token = self.all_tokens[self.curr_index];
+    
+            if matches!(token.lex.as_str(), ")") {
+                self.next_token(); // Move to the next token after the closing parenthesis
+                Ok(expression)
+            } else {
+                Err(ParserError::SyntaxError("No Closing Parenthesis Found".to_string()))
             }
+        } else {
+            Err(ParserError::SyntaxError("Unexpected Token".to_string()))
+        }
+    }
+    
+
+    fn next_token(&self) {
+        if self.curr_index < self.all_tokens.len() - 1 {
+            self.curr_index += 1;
+        } else {
+            println!("Parser ran out of tokens");
         }
     }
 }
@@ -234,7 +261,7 @@ fn program_loop() {
         }
 
         let lexed: Vec<Token> = lexer(data.as_str());
-        let ast: Result<Box<ParseNode>, ParserError> = parser.create_ast(&lexed);
+        let ast: Result<Box<ParseNode>, ParserError> = parser.create_ast(lexed);
 
         match ast {
             Ok(mut result) => {
